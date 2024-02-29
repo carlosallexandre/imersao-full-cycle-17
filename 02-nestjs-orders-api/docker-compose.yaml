@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  api:
+    image: node:20
+    depends_on:
+      - db
+      - rabbitmq
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports:
+      - 3000:3000
+    command: ./wait-for-it.sh -t 0 db:3306 -- npm run start:dev
+    networks:
+      - backend
+
+  db:
+    image: mysql:8.0.30-debian
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=nest
+    networks:
+      - backend
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=password
+    expose:
+      - 5672
+    ports:
+      - 15672:15672
+    networks:
+      - backend
+
+networks:
+  backend:
